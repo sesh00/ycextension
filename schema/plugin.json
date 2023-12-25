@@ -1,0 +1,8 @@
+{
+  "jupyter.lab.shortcuts": [],
+  "title": "ycextension",
+  "description": "ycextension settings.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}
