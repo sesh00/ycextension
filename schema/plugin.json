@@ -1,5 +1,28 @@
 {
   "jupyter.lab.shortcuts": [],
+  "jupyter.lab.toolbars": {
+    "Notebook": [
+      {
+        "name": "clear-all-outputs",
+        "command": "toolbar-button:clear-all-cell-outputs"
+      },
+
+      {
+        "name": "get-all-code",
+        "command": "toolbar-button:get-all-code"
+      }
+    ],
+    "Cell": [
+      {
+        "name": "run-code-cell",
+        "command": "toolbar-button:run-code-cell"
+      },
+      {
+        "name": "render-markdows-cell",
+        "command": "toolbar-button:render-markdown-cell"
+      }
+    ]
+  },
   "title": "ycextension",
   "description": "ycextension settings.",
   "type": "object",
