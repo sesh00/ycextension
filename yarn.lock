@@ -2387,6 +2387,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@jupyterlab/logconsole@npm:^4.0.9":
+  version: 4.0.9
+  resolution: "@jupyterlab/logconsole@npm:4.0.9"
+  dependencies:
+    "@jupyterlab/coreutils": ^6.0.9
+    "@jupyterlab/nbformat": ^4.0.9
+    "@jupyterlab/outputarea": ^4.0.9
+    "@jupyterlab/rendermime": ^4.0.9
+    "@jupyterlab/services": ^7.0.9
+    "@jupyterlab/translation": ^4.0.9
+    "@lumino/coreutils": ^2.1.2
+    "@lumino/disposable": ^2.1.2
+    "@lumino/messaging": ^2.0.1
+    "@lumino/signaling": ^2.1.2
+    "@lumino/widgets": ^2.3.0
+  checksum: eaa2e03eef6f07b761726112ec23de3babd17f13f83f3baa58586685fef069bf08aa2f46abf55758205521bce37c63410c0f8eaab796c6389e7ee4cf484ee8ee
+  languageName: node
+  linkType: hard
+
 "@jupyterlab/lsp@npm:^4.0.9":
   version: 4.0.9
   resolution: "@jupyterlab/lsp@npm:4.0.9"
@@ -10466,6 +10485,7 @@ __metadata:
   dependencies:
     "@jupyterlab/application": ^4.0.0
     "@jupyterlab/builder": ^4.0.0
+    "@jupyterlab/logconsole": ^4.0.9
     "@jupyterlab/settingregistry": ^4.0.0
     "@jupyterlab/testutils": ^4.0.0
     "@types/jest": ^29.2.0

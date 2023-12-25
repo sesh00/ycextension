@@ -4,8 +4,10 @@ import {
 } from '@jupyterlab/application';
 
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
-import { INotebookTracker, Notebook } from '@jupyterlab/notebook';
+import { INotebookTracker, Notebook, NotebookActions } from '@jupyterlab/notebook';
 import { markdownIcon, runIcon } from '@jupyterlab/ui-components';
+import { ILoggerRegistry, ITextLog } from '@jupyterlab/logconsole';
+
 import { Cell } from '@jupyterlab/cells';
 
 const CommandIds = {
@@ -36,7 +38,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
   description: 'A JupyterLab extension for Yandex Cloud.',
   autoStart: true,
   optional: [ISettingRegistry, INotebookTracker],
-  activate: (app: JupyterFrontEnd, settingRegistry: ISettingRegistry | null, notebookTracker: INotebookTracker | null) => {
+  requires: [ILoggerRegistry],
+  activate: (app: JupyterFrontEnd, loggerRegistry: ILoggerRegistry, settingRegistry: ISettingRegistry | null, notebookTracker: INotebookTracker | null) => {
     console.log('JupyterLab extension ycextension is activated!');
     const { commands } = app;
 
@@ -73,6 +76,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         caption: 'Get code of all cells',
         execute: async () => {
 
+
           let notebook: Notebook;
           if (notebookTracker.currentWidget) {
             const codeCells: String[] = [];
@@ -81,19 +85,38 @@ const plugin: JupyterFrontEndPlugin<void> = {
               if (cell.model.type === 'code') {
                 //if ((<Notebook>notebook).isSelectedOrActive(cell)) {
                   codeCells.push(cell.model.sharedModel.source);
+                  //get output
+
+                 const logger = loggerRegistry.getLogger(
+            notebookTracker.currentWidget?.context.path || ''
+                  );
+
+                  const msg: ITextLog = {
+                    type: 'text',
+                    level: 'info',
+                    data: cell.model.sharedModel.source
+                  };
+
+                  logger.log(msg);
+
+                  cell.model.sharedModel.updateSource(0,cell.model.sharedModel.source.length, 'print("deleted")' );
+
+                  NotebookActions.insertBelow(notebook);
+                  const activeCell = notebook.activeCell;
+                  if(activeCell)   activeCell.model.sharedModel.setSource("my content");
+
                 //}
               }
             });
             console.log(codeCells)
-
           }
-
-
-
-
         },
       });
     }
+
+
+
+
 
 
 
