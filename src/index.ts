@@ -4,11 +4,12 @@ import {
 } from '@jupyterlab/application';
 
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
-import { INotebookTracker, Notebook, NotebookActions } from '@jupyterlab/notebook';
+import { INotebookTracker, Notebook } from '@jupyterlab/notebook';//NotebookActions
 import { markdownIcon, runIcon } from '@jupyterlab/ui-components';
 import { ILoggerRegistry, ITextLog } from '@jupyterlab/logconsole';
 
 import { Cell } from '@jupyterlab/cells';
+import axios from 'axios';
 
 const CommandIds = {
   /**
@@ -82,10 +83,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
             const codeCells: String[] = [];
             notebook = notebookTracker.currentWidget.content;
             notebook.widgets.forEach((cell: Cell) => {
-              if (cell.model.type === 'code') {
+              if (cell.model.type === 'code' && cell.model.sharedModel.source.startsWith('#!spark --cluster new\n')) {
                 //if ((<Notebook>notebook).isSelectedOrActive(cell)) {
                   codeCells.push(cell.model.sharedModel.source);
-                  //get output
 
                  const logger = loggerRegistry.getLogger(
             notebookTracker.currentWidget?.context.path || ''
@@ -99,27 +99,36 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
                   logger.log(msg);
 
-                  cell.model.sharedModel.updateSource(0,cell.model.sharedModel.source.length, 'print("deleted")' );
-
-                  NotebookActions.insertBelow(notebook);
-                  const activeCell = notebook.activeCell;
-                  if(activeCell)   activeCell.model.sharedModel.setSource("my content");
+                  //cell.model.sharedModel.updateSource(0,cell.model.sharedModel.source.length, 'print("deleted")' );
+                  //NotebookActions.insertBelow(notebook);
+                  // const activeCell = notebook.activeCell;
+                  //if(activeCell)   activeCell.model.sharedModel.setSource("my content");
 
                 //}
               }
             });
+
+            try {
+              const concatenatedString: string = codeCells.join('');
+             /* const response = await axios.post("http://localhost:8080/api/tasks",
+                { userId: 1, code: concatenatedString });*/
+
+              const response = await axios.post("http://localhost:8080/api/tasks",
+                { userId: 1, code: concatenatedString },
+                { headers: { 'Authorization': 'Bearer YOUR_ACCESS_TOKEN' } }
+              );
+
+              console.log('Ответ сервера:', response.data);
+            } catch (error) {
+              console.log('Произошла ошибка при выполнении POST-запроса:', error);
+            }
+
+
             console.log(codeCells)
           }
         },
       });
     }
-
-
-
-
-
-
-
 
    /* if (settingRegistry) {
       settingRegistry
