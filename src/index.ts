@@ -27,7 +27,11 @@ const CommandIds = {
   /**
    * Command to get all code.
    */
-  getAllCode: 'toolbar-button:get-all-code'
+  getAllCode: 'toolbar-button:get-all-code',
+  /**
+   * Command for main menu settings.
+   */
+
 };
 
 /**
@@ -38,12 +42,49 @@ const plugin: JupyterFrontEndPlugin<void> = {
   id: 'ycextension:plugin',
   description: 'A JupyterLab extension for Yandex Cloud.',
   autoStart: true,
-  optional: [ISettingRegistry, INotebookTracker],
-  requires: [ILoggerRegistry],
-  activate: (app: JupyterFrontEnd, loggerRegistry: ILoggerRegistry, settingRegistry: ISettingRegistry | null, notebookTracker: INotebookTracker | null) => {
+  optional: [INotebookTracker],
+  requires: [ILoggerRegistry, ISettingRegistry as any],
+  activate: (app: JupyterFrontEnd, loggerRegistry: ILoggerRegistry,
+             settingRegistry: ISettingRegistry, notebookTracker: INotebookTracker | null) => {
     console.log('JupyterLab extension ycextension is activated!');
     const { commands } = app;
 
+    let email = "";
+    let password = "";
+    let token = "";
+
+    /**
+     * Load the settings for this extension
+     *
+     * @param setting Extension settings
+     */
+    function loadSetting(setting: ISettingRegistry.ISettings): void {
+      // Read the settings and convert to the correct type
+      email = setting.get('email').composite as string;
+      password = setting.get('password').composite as string;
+      token = setting.get('token').composite as string;
+
+      console.log(
+        `'${password}' '${email}' '${token}'`
+      );
+    }
+
+    function setSetting(setting: ISettingRegistry.ISettings): void {
+      // Read the settings and convert to the correct type
+      setting.set('email', email);
+      setting.set('password', password);
+      setting.set('token', token);
+     
+
+      console.log(
+        `'${password}' '${email}' '${token}'`
+      );
+    }
+
+   Promise.all([app.restored, settingRegistry.load(plugin.id)])
+      .then(([, setting]) => {
+        loadSetting(setting);
+      })
 
     if(notebookTracker) {
       commands.addCommand(CommandIds.runCodeCell, {
@@ -108,14 +149,32 @@ const plugin: JupyterFrontEndPlugin<void> = {
               }
             });
 
+
+            if (email.length > 0 && password.length > 0) {
+              try {
+                const response =  await axios.post("http://localhost:8080/api/users/login",
+                  { username: email, password: password }
+                );
+
+                token = response.data;
+                settingRegistry.load(plugin.id).then(setting =>  setSetting(setting));
+
+
+              } catch (error) {
+                console.log('Произошла ошибка при выполнении POST-запроса:', error);
+              }
+
+            }
+
+
             try {
               const concatenatedString: string = codeCells.join('');
              /* const response = await axios.post("http://localhost:8080/api/tasks",
                 { userId: 1, code: concatenatedString });*/
 
               const response = await axios.post("http://localhost:8080/api/tasks",
-                { userId: 1, code: concatenatedString },
-                { headers: { 'Authorization': 'Bearer YOUR_ACCESS_TOKEN' } }
+                { code: concatenatedString },
+                { headers: { 'Authorization': token } }
               );
 
               console.log('Ответ сервера:', response.data);
@@ -130,16 +189,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
       });
     }
 
-   /* if (settingRegistry) {
-      settingRegistry
-        .load(plugin.id)
-        .then(settings => {
-          console.log('ycextension settings loaded:', settings.composite);
-        })
-        .catch(reason => {
-          console.error('Failed to load settings for ycextension.', reason);
-        });
-    }*/
+
   }
 };
 

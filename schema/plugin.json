@@ -26,6 +26,25 @@
   "title": "ycextension",
   "description": "ycextension settings.",
   "type": "object",
-  "properties": {},
+  "properties": {
+    "email": {
+      "type": "string",
+      "title": "email",
+      "description": "This is email for authentication to API",
+      "default": ""
+    },
+    "password": {
+      "type": "string",
+      "title": "password",
+      "description": "This is login for authentication to API",
+      "default": ""
+    },
+    "token": {
+      "type": "string",
+      "title": "Access token",
+      "description": "This is token for access to DataProc Queue",
+      "default": ""
+    }
+  },
   "additionalProperties": false
 }
