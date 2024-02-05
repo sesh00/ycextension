@@ -7,7 +7,7 @@ import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { INotebookTracker, Notebook } from "@jupyterlab/notebook";
 import { markdownIcon, runIcon } from "@jupyterlab/ui-components";
 import { Notification } from "@jupyterlab/apputils";
-import { Cell } from "@jupyterlab/cells";
+//import { Cell } from "@jupyterlab/cells";
 import axios from "axios";
 
 const CommandIds = {
@@ -30,7 +30,13 @@ const CommandIds = {
   /**
    * Command for main menu settings.
    */
-  checkAuthorisation: "toolbar-button:check-authorisation"
+  checkAuthorisation: "toolbar-button:check-authorisation",
+  /**
+  *  Command for save notebook in json format
+  */
+  saveNotebook: "toolbar-button:save-notebook",
+
+
 };
 
 /**
@@ -55,15 +61,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
     let password = "";
     let token = "";
 
-
     function loadSetting(setting: ISettingRegistry.ISettings): void {
       email = setting.get("email").composite as string;
       password = setting.get("password").composite as string;
       token = setting.get("token").composite as string;
     }
 
-
-    // @ts-ignore
     async function login(setting: ISettingRegistry.ISettings): Promise<void> {
 
         try {
@@ -144,6 +147,45 @@ const plugin: JupyterFrontEndPlugin<void> = {
         execute: async () => {
           let notebook: Notebook;
           if (notebookTracker.currentWidget) {
+            notebook = notebookTracker.currentWidget.content;
+            // @ts-ignore
+            const notebookData = notebook.model.toJSON();
+            const notebookJSON = JSON.stringify(notebookData, null, 2);
+
+            alert(`Are you sure you want to submit this for review? ${notebookJSON}`);
+
+             try {
+              const response = await axios.post(
+                "http://localhost:8080/api/tasks",
+                { code: notebookJSON },
+                { headers: { Authorization: token } }
+              );
+
+              Notification.success(`Your code has been successfully submitted`);
+
+              console.log("Ответ сервера:", response.data);
+            } catch (error) {
+              console.log(
+                "Произошла ошибка при выполнении POST-запроса:",
+                error
+              );
+
+              const errorMessage = `Submit failed: ${
+                error instanceof Error ? error.message : "Unknown error"
+              }`;
+
+              Notification.error(`${errorMessage}`, {
+                actions: [
+                  {
+                    label: "Help",
+                    callback: () => alert("This was a fake error."),
+                  },
+                ],
+                autoClose: 3000,
+              });
+            }
+          }
+         /* if (notebookTracker.currentWidget) {
             const codeCells: String[] = [];
             notebook = notebookTracker.currentWidget.content;
             notebook.widgets.forEach((cell: Cell) => {
@@ -192,9 +234,29 @@ const plugin: JupyterFrontEndPlugin<void> = {
             }
 
             console.log(codeCells);
-          }
+          }*/
         },
       });
+
+      commands.addCommand(CommandIds.saveNotebook, {
+        label: "Save Notebook as JSON",
+        caption: "Save the current notebook as JSON",
+        execute: async () => {
+          let notebook: Notebook;
+          if (notebookTracker.currentWidget) {
+            notebook = notebookTracker.currentWidget.content;
+            // @ts-ignore
+            const notebookData = notebook.model.toJSON();
+            const notebookJSON = JSON.stringify(notebookData, null, 2);
+
+            alert(notebookJSON);
+
+             Notification.success(
+              `Your notebook was downloaded successfully '${notebookJSON}'`
+            );
+          }
+  },
+});
     }
   },
 };

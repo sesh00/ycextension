@@ -24,6 +24,10 @@
       {
         "name": "render-markdows-cell",
         "command": "toolbar-button:render-markdown-cell"
+      },
+      {
+        "name": "save-notebook",
+        "command":"toolbar-button:save-notebook"
       }
     ]
   },
